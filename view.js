@@ -26,7 +26,10 @@ function renderView(iteration){
 	let agentInfo="";
 	agentList.forEach(agent=>{
 		//agent.update();
-		agentInfo+="Agent "+agent.id+" likes: "+agent.likeArray+"\ntrust: "+agent.trustArray
+		agentInfo+="Agent "+agent.id+" likes: "+agent.likeArray
+		//+"\ntrust: "+agent.trustArray
+		+"\nmemory: "+agent.memory
+
 		+"\npopularity: "+agent.popularity+" last move: "+ agent.lastMove+"\n"+
 		"loneliness: "+agent.loneliness+"\n"
 	});	

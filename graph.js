@@ -1,7 +1,7 @@
 var NODE_RADIUS = 7;
 var GATE_RADIUS = 2;
-var REPEL_FORCE = 0;
-var LINK_DISTANCE = 100;
+var REPEL_FORCE = 30;
+var LINK_DISTANCE = 20;
 
 var WIDTH = 800;
 var HEIGHT = 800;

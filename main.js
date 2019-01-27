@@ -1,6 +1,6 @@
 const userControl=false, trackedAgent=0
-const numberOfAgents=8,gridDimensions=8
-const inputType=4,generationLength=50
+const numberOfAgents=8,gridDimensions=7
+const inputType=5,generationLength=50
 
 let wall="-".repeat(gridDimensions*2+2)
 
@@ -64,14 +64,19 @@ class Agent{
 		grid[y][x]=this.id;
 		this.x=x;
 		this.y=y;
-		this.trustArray=Array(numberOfAgents).fill(0.1);
-		this.likeArray=Array(numberOfAgents).fill(0.1);
+		//this.trustArray=Array(numberOfAgents).fill(0.1);
+		this.likeArray=Array(numberOfAgents).fill(0);
 		this.interestArray=Array(numberOfAgents).fill(.8/numberOfAgents);
 		this.popularity=50;
 		this.lastMove="";
 		this.loneliness=0;
+		this.memory=Array(5).fill(0);
 	}
-
+	updateMemory(score){
+		this.memory.shift()
+		this.memory.push(score)
+		//console.log(this.id,this.memory)
+	}
 
 	generateInput(type){
 
@@ -106,6 +111,16 @@ class Agent{
 					if (space!=-1) input.push(1);
 					else input.push(0);
 			});
+			return input;
+		}
+		if (type==5){	
+			let input=[];
+			//8 directions+5 memory neurons
+			this.surroundings.forEach(space=>{
+					if (space!=-1) input.push(1);
+					else input.push(0);
+			});
+			input.concat(this.memory)
 			return input;
 		}
 	}
@@ -234,21 +249,24 @@ class Agent{
 			grid[currentY][currentX]=-1;			
 			grid[this.y][this.x]=this.id;
 		}
+		// 	this.lastMove="Agent "+this.id+" worked up the nerve to walk 1 space "+directionArray[direction];
 		this.lastMove= "Agent "+this.id+" moved "+ direction 
 	}
 	getLoneliness(){
 		let changeInloneliness=1
 		this.surroundings.forEach(space=>{
-			if (space!=-1 && changeInloneliness>-1) changeInloneliness-=1;
+			//console.log(this.id,space)
+			if (space!=-1) changeInloneliness-=1;
 		})
 		this.loneliness+=changeInloneliness
+		this.updateMemory(-changeInloneliness);
 		//console.log('agent',this.id,'loneliness',this.loneliness)
 	}
 
-	update(brain){
+	update(thinkAndThenAct){
+		thinkAndThenAct();
 		this.getSurroundings();
 		this.getLoneliness()
-		brain();
 		this.computePopularity();
 	}
 }
@@ -296,12 +314,12 @@ function stepSim(){
 					let input = agent.generateInput(inputType);
 					let output = networks.population[agentIndex].activate(input);
 					let move = outputToMove(output);
+					if (move==-1) move = 4; //if no output due to all 0 input, make conversation
 					let dodo = agent.output[move];
-					let rand= Math.random()
+					//let rand= Math.random()
 					//if(rand<.5)
 					dodo();
 				//}
-				//console.log(move,dodo)
 			}
 		);
 	})
@@ -326,7 +344,7 @@ function stepSim(){
 		if (!skipToGeneration) {
 			let svg=document.querySelector('.draw')
 			svg.parentNode.replaceChild(svg.cloneNode(false), svg);
-			drawGraph(networks.population[0].graph(800,800), '.draw');
+			drawGraph(networks.population[0].graph(400,400), '.draw');
 		}
 	}
 }
@@ -341,11 +359,26 @@ function resetAgents(){
 	agentList.forEach(agent=>{agent.resetAgent();})
 }
 
-//initialize
-renderView(iteration);
-iteration+=1;
-let networks = buildNeuralNets(4)
-drawGraph(networks.population[0].graph(800,800), '.draw');
+let networks
+function start(action){
+	//initialize
+	renderView(iteration);
+	iteration+=1;
+	if (action=='new') networks = buildNeuralNets(inputType)
+	if (action=='load') {
+    	networks = buildNeuralNets(inputType,true)
+		generation=localStorage.getItem('generation');
+	}
+		console.log('networks:',networks)
+	drawGraph(networks.population[0].graph(500,500), '.draw');
+}
+
+function save(){
+ 	localStorage.setItem('networks',JSON.stringify(networks.export()))
+	localStorage.setItem('generation', generation);
+}
+
+
 
 let loop
 function play(speed,skip){
@@ -353,9 +386,11 @@ function play(speed,skip){
 	if (loop) clearInterval(loop);
 	loop = setInterval(stepSim,speed);
 }
+
 function pause(){
 	clearInterval(loop);
 }
+
 let skipToGeneration
 function skip(numberOfGenerations){
 	let svg=document.querySelector('.draw')
@@ -363,14 +398,3 @@ function skip(numberOfGenerations){
 	skipToGeneration = generation+numberOfGenerations
 	play(0,true);
 }
-
-
-
-
-// function moveInRandomDirection(){
-// 	let directionArray=['up','down','left','right']
-// 	let direction=Math.round(Math.random()*3);
-// 	this.move(directionArray[direction]);
-// 	this.lastMove="Agent "+this.id+" worked up the nerve to walk 1 space "+directionArray[direction];
-// }
-

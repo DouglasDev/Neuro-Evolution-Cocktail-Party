@@ -10,43 +10,56 @@ let hidden=10
 
 
 
-function initNeat(INPUT,OUTPUT,FITNESS_FUNCTION){
-  var input = new neataptic.Layer.Dense(INPUT);
-  var hidden1 = new neataptic.Layer.Dense(8);
-  var hidden2 = new neataptic.Layer.Dense(6);
-  var output = new neataptic.Layer.Dense(OUTPUT);
-  // connect however you want
-  input.connect(hidden1);
-  hidden1.connect(hidden2);
-  hidden2.connect(output);
+function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
 
-  neat = new Neat(
-    INPUT,
-    OUTPUT,
-    FITNESS_FUNCTION,
-    {
-      mutation: Methods.mutation.FFW,
-      popsize: numberOfAgents,
-      elitism: 7,
-      fitnessPopulation:false,
-      //mutationRate: 1,
-      network: Architect.Construct([input, hidden1, hidden2, output])
-    }
-  );
+  if(!USE_TRAINED_POP) {
+    var input = new neataptic.Layer.Dense(INPUT);
+    var hidden1 = new neataptic.Layer.Dense(INPUT-2);
+    var hidden2 = new neataptic.Layer.Dense(INPUT-4);
+    var output = new neataptic.Layer.Dense(OUTPUT);
+    // 4 layer
+    // input.connect(hidden1);
+    // hidden1.connect(hidden2);
+    // hidden2.connect(output);
+    //3 layer
+    input.connect(hidden1);
+    hidden1.connect(output);
+
+
+    neat = new Neat(
+      INPUT,
+      OUTPUT,
+      null,
+      {
+        mutation: Methods.mutation.ALL,
+        popsize: numberOfAgents,
+        elitism: numberOfAgents-2,
+        fitnessPopulation:false,
+        //mutationRate: 1,
+        network: Architect.Construct([input, hidden1, output])
+      }
+    );
+  }
+  else{
+    neat = new Neat(
+      INPUT,
+      OUTPUT,
+      null,
+      {
+        mutation: Methods.mutation.ALL,
+        popsize: numberOfAgents,
+        elitism: numberOfAgents-4,
+        fitnessPopulation:false,
+      }
+    )
+
+    let populationArr =JSON.parse(localStorage.getItem('networks'))
+    neat.import(populationArr)
+    console.log('loaded saved networks')
+  }
+
   return neat
-  if(USE_TRAINED_POP) neat.population = population;
 }
-
-/** hooks up neural nets to new agents */
-// function startEvaluation(){
-//   players = [];
-//   highestScore = 0;
-
-//   for(var genome in neat.population){
-//     genome = neat.population[genome];
-//     new Player(genome);
-//   }
-// }
 
 /** End the evaluation of the current generation */
 function endEvaluation(){
@@ -54,17 +67,14 @@ function endEvaluation(){
 
   neat.sort();
   var newPopulation = [];
-
   // Elitism
   for(var i = 0; i < neat.elitism; i++){
     newPopulation.push(neat.population[i]);
   }
-
   // Breed the next individuals
   for(var i = 0; i < neat.popsize - neat.elitism; i++){
     newPopulation.push(neat.getOffspring());
   }
-
   // Replace the old population with the new population
   neat.population = newPopulation;
   neat.mutate();
@@ -73,7 +83,7 @@ function endEvaluation(){
 }
 
 
-function buildNeuralNets(type){
+function buildNeuralNets(type,loadSaved){
 
   let INPUT
   //idea 1
@@ -97,24 +107,15 @@ function buildNeuralNets(type){
   //knows like and trust array
   if (type==3) INPUT=8*numberOfAgents+2*numberOfAgents
   if (type==4) INPUT=8
-
-  //const INPUT=2
+  if (type==5) INPUT=8+5
 
   //can move in 4 directions, make conversation, 
   const OUTPUT=5
   // insult or complement any agent
   //const OUTPUT=6+2*numberOfAgents
 
-  // const FITNESS_FUNCTION= function(net){
-  //  let agent = networks.population.indexOf(net)
-  //  console.log(agent)
-  //    net.score= agentList[agent].popularity;
-  //    console.log(net)
-  //    return net.score
-  // };
-
-  let n= initNeat(INPUT,OUTPUT,null)
-  console.log(n)
+  let n= initNeat(INPUT,OUTPUT,loadSaved)
+//  console.log(n)
   return n
 }
 
@@ -126,27 +127,18 @@ function customFitnessFunction(){
       genome.score = 50-agentList[index].loneliness//-(genome.nodes.length/2)
   })
 
-  //   genome.score -= genome.nodes.length * SCORE_RADIUS / 10;
-  // // Draw the best genome
-
-
   // Sort the population by score
   networks.sort();
-//  console.log(networks)
-
   // Init new pop
   var newPopulation = [];
-
   // Elitism
   for(var i = 0; i < neat.elitism; i++){
     newPopulation.push(networks.population[i]);
   }
-
   // Breed the next individuals
   for(var i = 0; i < networks.popsize - networks.elitism; i++){
     newPopulation.push(networks.getOffspring());
   }
-
   // Replace the old population with the new population
   networks.population = newPopulation;
   networks.mutate();
