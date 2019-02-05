@@ -1,5 +1,5 @@
 const userControl=false, trackedAgent=0
-const numberOfAgents=8,gridDimensions=7
+const numberOfAgents=8,gridDimensions=8
 const inputType=5,generationLength=50
 
 let wall="-".repeat(gridDimensions*2+2)
@@ -20,9 +20,9 @@ function forceValIntoRange(val){
 }
 
 function noNeighbors(xPos,yPos){
-	let surroundingDirections=[[1,-1],[1,0],[1,1],
-							   [0,-1],		[0,1],
-							   [-1,-1],[-1,0],[-1,1]];
+	let surroundingDirections=[[ 1, -1],[ 1, 0],[ 1, 1],
+				   [ 0, -1],        [ 0, 1],
+				   [-1, -1],[-1, 0],[-1, 1]];
 	let x,y
 	let neighbors=false
 	surroundingDirections.forEach((direction,index)=>{
@@ -36,9 +36,8 @@ function noNeighbors(xPos,yPos){
 	return !neighbors
 }
 
-
-class Agent{
-	constructor(id){
+class Agent {
+	constructor(id) {
 		this.id=id;
 		this.output=[
 			()=>this.move("up"),
@@ -378,9 +377,17 @@ function stepSim(){
 }
 
 function logAverage(){
-	let avg=0
-	agentList.forEach(agent=>{avg+=agent.loneliness})
-	console.log('average: '+avg/numberOfAgents)
+	let avg=0, eavg=0
+	agentList.forEach((agent,index)=>{
+                avg+=agent.loneliness
+                if (index < networks.elitism) {
+                        eavg+=agent.loneliness
+                }
+        })
+
+        const ml = Math.min(...agentList.map(agent => agent.loneliness))
+        console.table({average: Math.round(avg/numberOfAgents), min: ml,
+                eavg: Math.round(eavg/networks.elitism)})
 }
 
 function resetAgents(){
@@ -391,14 +398,14 @@ let networks
 function start(action){
 	//initialize
 	renderView(iteration);
-	iteration+=1;
+	iteration += 1;
 	if (action=='new') networks = buildNeuralNets(inputType)
 	if (action=='load') {
     	networks = buildNeuralNets(inputType,true)
 		generation=localStorage.getItem('generation');
 	}
-		console.log('networks:',networks)
-	drawGraph(networks.population[0].graph(500,500), '.draw');
+		console.log('networks:', networks)
+	drawGraph(networks.population[0].graph(500, 500), '.draw');
 }
 
 function save(){
@@ -406,13 +413,11 @@ function save(){
 	localStorage.setItem('generation', generation);
 }
 
-
-
 let loop
 function play(speed,skip){
 	if (!skip) skipToGeneration = undefined;
 	if (loop) clearInterval(loop);
-	loop = setInterval(stepSim,speed);
+	loop = setInterval(stepSim, speed);
 }
 
 function pause(){

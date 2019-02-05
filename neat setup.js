@@ -25,7 +25,6 @@ function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
     input.connect(hidden1);
     hidden1.connect(output);
 
-
     neat = new Neat(
       INPUT,
       OUTPUT,
@@ -33,22 +32,22 @@ function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
       {
         mutation: Methods.mutation.ALL,
         popsize: numberOfAgents,
-        elitism: numberOfAgents-2,
+        elitism: numberOfAgents - 2,
         fitnessPopulation:false,
         //mutationRate: 1,
         network: Architect.Construct([input, hidden1, output])
       }
     );
-  }
-  else{
+  } else { // use trained pop
     neat = new Neat(
       INPUT,
       OUTPUT,
       null,
       {
         mutation: Methods.mutation.ALL,
+        mutationRate: 1,
         popsize: numberOfAgents,
-        elitism: numberOfAgents-4,
+        elitism: numberOfAgents - 2,
         fitnessPopulation:false,
       }
     )
@@ -129,20 +128,20 @@ function customFitnessFunction(){
 
   // Sort the population by score
   networks.sort();
-  // Init new pop
-  var newPopulation = [];
-  // Elitism
-  for(var i = 0; i < neat.elitism; i++){
-    newPopulation.push(networks.population[i]);
-  }
-  // Breed the next individuals
-  for(var i = 0; i < networks.popsize - networks.elitism; i++){
-    newPopulation.push(networks.getOffspring());
-  }
-  // Replace the old population with the new population
-  networks.population = newPopulation;
-  networks.mutate();
 
+  const elitists = networks.population.slice(0, networks.elitism);
+  networks.population = elitists;
+
+  // Breed the next individuals
+  babies = [];
+  for(var i = 0; i < networks.popsize - networks.elitism; i++) {
+    babies.push(networks.getOffspring());
+  }
+
+  console.log('halp')
+  networks.population = babies;
+  networks.mutate();
+  networks.population = [...elitists, ...babies];
   networks.generation++;
 }
 
