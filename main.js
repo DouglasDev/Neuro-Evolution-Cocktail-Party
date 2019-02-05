@@ -185,7 +185,35 @@ class Agent{
 	}
 
 	complementOther(personBeingComplemented){
-				console.log('complement')
+		console.log('complement')
+
+		//agent only knows its own like value of everyone in the surrounding squares
+		//for incrementing: c+=(1-c)/10 approaches 1
+		//for decrementing: c-=(1+c)/10 approaches -1
+		
+		//complement:
+		//it complements someone in a certain square if output node representing 
+		//that square is max of all positional output nodes and complement ouput node is max
+		
+		//effect of complement: 
+		
+		//person being complemented likes you alot more,
+		
+		//people in surrounding squares like person being complemented a bit more
+		
+		//if people in surrounding square like you more if their like of person being complemented>0
+		//else people in surrounding square like you less
+
+
+
+		//insult:
+		//it insults someone in a certain square if output node representing 
+		//that square is max of all positional output nodes and complement ouput node is max
+		//effect of complement: person being complemented likes you alot more,
+		//people in surrounding squares like person being complemented a bit more
+		//if people in surrounding square like you more if their like of person being complemented>0
+		//else people in surrounding square like you less
+
 
 		this.surroundings.forEach(personInSpace=>{
 			if (personInSpace!=-1){
