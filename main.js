@@ -1,6 +1,6 @@
 const userControl=false, trackedAgent=0
 const numberOfAgents=8,gridDimensions=8
-const inputType=5,generationLength=50
+const inputType=6,generationLength=50
 
 let wall="-".repeat(gridDimensions*2+2)
 
@@ -50,12 +50,14 @@ class Agent {
 		//fix:
 		//do after all agents are created
 		this.getSurroundings();
+		this.getBigSurroundings();
+    this.lastDir = [0,0]
 	}
 
 	resetAgent(){
 		let x=Math.round(Math.random()*(gridDimensions-1));
 		let y=Math.round(Math.random()*(gridDimensions-1));
-		
+
 		while (!(grid[y][x]==-1 && noNeighbors(x,y))){
 	 		x=Math.round(Math.random()*(gridDimensions-1));
 			y=Math.round(Math.random()*(gridDimensions-1));
@@ -80,10 +82,10 @@ class Agent {
 	generateInput(type){
 
 		//idea 3
-		//can see all surrounding agents, 
+		//can see all surrounding agents,
 		//knows like and trust array
 		//if (type==3) INPUT=8*numberOfAgents+2*numberOfAgents
-		if (type==3){	
+		if (type==3){
 			let input=[];
 			for (let a=0; a<numberOfAgents;a++){
 				if (a!=this.id){
@@ -103,7 +105,7 @@ class Agent {
 			return input;
 		}
 		//8 directions only
-		if (type==4){	
+		if (type==4){
 			let input=[];
 			//8 directions
 			this.surroundings.forEach(space=>{
@@ -112,16 +114,25 @@ class Agent {
 			});
 			return input;
 		}
-		if (type==5){	
+		if (type==5){
 			let input=[];
 			//8 directions+5 memory neurons
 			this.surroundings.forEach(space=>{
 					if (space!=-1) input.push(1);
 					else input.push(0);
 			});
-			input.concat(this.memory)
-			return input;
+			return input.concat(this.memory);
 		}
+    if(type==6){
+			let input=[];
+      return this.bigSurroundings.concat(this.memory)
+			//8 directions+5 memory neurons
+			this.surroundings.forEach(space=>{
+					if (space!=-1) input.push(1);
+					else input.push(0);
+			});
+			return input.concat(this.memory);
+    }
 	}
 
 	computePopularity(){
@@ -130,7 +141,7 @@ class Agent {
 			if (agent.id!=this.id){
 				popularity+=agent.likeArray[this.id];
 			}
-		})	
+		})
 			//console.log('popularity',popularity)
 			//console.log('Math.exp(-popularity)',Math.exp(-popularity))
 			this.popularity=100/(1+Math.exp(-popularity));
@@ -153,12 +164,44 @@ class Agent {
 		})
 	}
 
+	getBigSurroundings(){
+    let surroundingDirections=[
+      [ 2, -2], [ 2, -1], [ 2, 0], [ 2, 1], [ 2, 2],
+      [ 1, -2], [ 1, -1], [ 1, 0], [ 1, 1], [ 1, 2],
+      [ 0, -2], [ 0, -1], /*0, 0*/ [ 0, 1], [ 0, 2],
+      [-1, -2], [-1, -1], [-1, 0], [-1, 1], [-1, 2],
+      [-2, -2], [-2, -1], [-2, 0], [-2, 1], [-2, 2]
+    ];
+
+		let x,y
+    this.bigSurroundings = [].concat.apply([],
+      surroundingDirections.map((direction,index)=>{
+        y=(this.y-direction[0])%(gridDimensions);
+        x=(this.x+direction[1])%(gridDimensions);
+
+        if (y==-1) y=gridDimensions-1;
+        else if (y==-2) y=gridDimensions-2;
+
+        if (x==-1) x=gridDimensions-1;
+        else if (x==-2) x=gridDimensions-2;
+
+        const tile = grid[y][x]
+        let facing
+
+        if (tile == -1) facing = [0, 0]
+        else facing = agentList[tile].lastDir
+
+        return [tile, ...facing]
+      })
+    )
+	}
+
 	insultOther(personBeingInsulted){
 		console.log('insult')
 		this.surroundings.forEach(personInSpace=>{
 			if (personInSpace!=-1){
-				// -if a insults b, 
-				// 	if b is present, b like and trust of a both decrease by .5, 
+				// -if a insults b,
+				// 	if b is present, b like and trust of a both decrease by .5,
 				if (personInSpace==personBeingInsulted){
 					agentList[personBeingInsulted].likeArray[this.id]=
 						forceValIntoRange(agentList[personBeingInsulted].likeArray[this.id]-.5)
@@ -189,24 +232,24 @@ class Agent {
 		//agent only knows its own like value of everyone in the surrounding squares
 		//for incrementing: c+=(1-c)/10 approaches 1
 		//for decrementing: c-=(1+c)/10 approaches -1
-		
+
 		//complement:
-		//it complements someone in a certain square if output node representing 
+		//it complements someone in a certain square if output node representing
 		//that square is max of all positional output nodes and complement ouput node is max
-		
-		//effect of complement: 
-		
+
+		//effect of complement:
+
 		//person being complemented likes you alot more,
-		
+
 		//people in surrounding squares like person being complemented a bit more
-		
+
 		//if people in surrounding square like you more if their like of person being complemented>0
 		//else people in surrounding square like you less
 
 
 
 		//insult:
-		//it insults someone in a certain square if output node representing 
+		//it insults someone in a certain square if output node representing
 		//that square is max of all positional output nodes and complement ouput node is max
 		//effect of complement: person being complemented likes you alot more,
 		//people in surrounding squares like person being complemented a bit more
@@ -216,7 +259,7 @@ class Agent {
 
 		this.surroundings.forEach(personInSpace=>{
 			if (personInSpace!=-1){
-					// -if a complements b, 
+					// -if a complements b,
 					// 	if b is in s, b like of a increases by .2, b trust of a increase by .1
 				if (personInSpace==personBeingComplemented){
 					agentList[personBeingComplemented].likeArray[this.id]=
@@ -249,10 +292,11 @@ class Agent {
 				forceValIntoRange(agentList[personInSpace].likeArray[this.id]+agentList[personInSpace].interestArray[this.id]);
 			//	agentList[personInSpace].trustArray[this.id]=
 			//	forceValIntoRange(agentList[personInSpace].trustArray[this.id]+agentList[personInSpace].interestArray[this.id]/2);
-				
+
 				agentList[personInSpace].interestArray[this.id]*=.9;
 			}
 		})
+    this.lastDir = [0,0]
 		this.lastMove="Agent "+this.id+" akwardly attempted to make conversation."
 	}
 
@@ -273,26 +317,35 @@ class Agent {
 			this.y=currentY;
 		}
 		else{
-			grid[currentY][currentX]=-1;			
+			grid[currentY][currentX]=-1;
 			grid[this.y][this.x]=this.id;
 		}
+
+		if (direction=="up")this.lastDir = [0, -1]
+		if (direction=="down")this.lastDir = [0, 1]
+		if (direction=="left")this.lastDir = [-1, 0]
+		if (direction=="right")this.lastDir = [1, 0]
 		// 	this.lastMove="Agent "+this.id+" worked up the nerve to walk 1 space "+directionArray[direction];
-		this.lastMove= "Agent "+this.id+" moved "+ direction 
+		this.lastMove= "Agent "+this.id+" moved "+ direction
 	}
 	getLoneliness(){
 		let changeInloneliness=1
 		this.surroundings.forEach(space=>{
 			//console.log(this.id,space)
-			if (space!=-1) changeInloneliness-=1;
+			if (space!=-1) changeInloneliness-=0.5;
+
+      if (this.lastDir[0] === 0 && this.lastDir[1] === 0)
+			  if (space!=-1) changeInloneliness-=0.5;
 		})
 		this.loneliness+=changeInloneliness
 		this.updateMemory(-changeInloneliness);
 		//console.log('agent',this.id,'loneliness',this.loneliness)
 	}
 
-	update(thinkAndThenAct){
+	update(type, thinkAndThenAct){
 		thinkAndThenAct();
 		this.getSurroundings();
+	  if (type==6)this.getBigSurroundings();
 		this.getLoneliness()
 		this.computePopularity();
 	}
@@ -330,7 +383,7 @@ let iteration=0,generation=0;
 function stepSim(){
 	iteration+=1;
 	agentList.forEach((agent,agentIndex)=>{
-		agent.update(
+		agent.update(inputType,
 			function(){
 				// if (agent.id==0 && userControl==true){
 				// 	//control agent 0
@@ -376,18 +429,28 @@ function stepSim(){
 	}
 }
 
-function logAverage(){
-	let avg=0, eavg=0
-	agentList.forEach((agent,index)=>{
-                avg+=agent.loneliness
-                if (index < networks.elitism) {
-                        eavg+=agent.loneliness
-                }
-        })
+let lastThroughputCheck = performance.now()
 
-        const ml = Math.min(...agentList.map(agent => agent.loneliness))
-        console.table({average: Math.round(avg/numberOfAgents), min: ml,
-                eavg: Math.round(eavg/networks.elitism)})
+function logAverage(){
+  let avg=0, eavg=0
+  agentList.forEach((agent,index)=>{
+    avg+=agent.loneliness
+    if (index < networks.elitism) {
+      eavg+=agent.loneliness
+    }
+  })
+
+  let now = performance.now()
+
+  const ml = Math.min(...agentList.map(agent => agent.loneliness))
+  console.table({
+    average: Math.round(avg/numberOfAgents),
+    min: ml,
+    eavg: Math.round(eavg/networks.elitism),
+    throughput: now - lastThroughputCheck
+  })
+
+  lastThroughputCheck = now
 }
 
 function resetAgents(){
