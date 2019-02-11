@@ -124,14 +124,7 @@ class Agent {
 			return input.concat(this.memory);
 		}
     if(type==6){
-			let input=[];
       return this.bigSurroundings.concat(this.memory)
-			//8 directions+5 memory neurons
-			this.surroundings.forEach(space=>{
-					if (space!=-1) input.push(1);
-					else input.push(0);
-			});
-			return input.concat(this.memory);
     }
 	}
 
@@ -191,7 +184,7 @@ class Agent {
         if (tile == -1) facing = [0, 0]
         else facing = agentList[tile].lastDir
 
-        return [tile, ...facing]
+        return [tile == -1 ? 0 : 1, ...facing]
       })
     )
 	}
@@ -332,10 +325,10 @@ class Agent {
 		let changeInloneliness=1
 		this.surroundings.forEach(space=>{
 			//console.log(this.id,space)
-			if (space!=-1) changeInloneliness-=0.5;
+			if (space!=-1) changeInloneliness-=1;
 
       if (this.lastDir[0] === 0 && this.lastDir[1] === 0)
-			  if (space!=-1) changeInloneliness-=0.5;
+			  if (space!=-1) changeInloneliness-=1;
 		})
 		this.loneliness+=changeInloneliness
 		this.updateMemory(-changeInloneliness);
