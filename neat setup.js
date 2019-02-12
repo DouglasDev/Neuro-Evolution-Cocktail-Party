@@ -64,6 +64,7 @@ function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
 function buildNeuralNets(type,loadSaved){
 
   let INPUT
+  let OUTPUT
   //idea 1
   //can see all surrounding agents,
   //hear conversation from any surrounding agents,
@@ -87,10 +88,12 @@ function buildNeuralNets(type,loadSaved){
   if (type==4) INPUT=8
   if (type==5) INPUT=8+5
   if (type==6) INPUT=(24*3)+5
+  if (type==7) INPUT=(24*3)+5+numberOfAgents /* include space for likeArray */
 
-  //can move in 4 directions, make conversation,
-  const OUTPUT=5
+  //can move in 4 directions, make conversation
+  OUTPUT=5
   // insult or complement any agent
+  if (type==7) OUTPUT=5+1+numberOfAgents
   //const OUTPUT=6+2*numberOfAgents
 
   let n= initNeat(INPUT,OUTPUT,loadSaved)

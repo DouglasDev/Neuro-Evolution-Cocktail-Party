@@ -14,9 +14,9 @@ function renderView(iteration){
 
 			if (grid[y][x]==-1) gridView+=" ";
 			else gridView+=grid[y][x].toString();
-			
+
 			if (grid[y][x]<10) gridView+=" ";
-			
+
 			if (x==gridDimensions-1) gridView+="|\n"
 
 		}
@@ -26,13 +26,14 @@ function renderView(iteration){
 	let agentInfo="";
 	agentList.forEach(agent=>{
 		//agent.update();
-		agentInfo+="Agent "+agent.id+" likes: "+agent.likeArray
+    agentInfo+="Agent "+agent.id+" likes: "+agent.likeArray
 		//+"\ntrust: "+agent.trustArray
-		+"\nmemory: "+agent.memory
+      +" last move: "+ agent.lastMove+"\n"+
 
-		+"\npopularity: "+agent.popularity+" last move: "+ agent.lastMove+"\n"+
+      /*+"\npopularity: "+agent.popularity*/
 		"loneliness: "+agent.loneliness+"\n"
-	});	
+		+"memory: "+agent.memory+"\n"
+	});
 	//console.clear();
 
 	let agentTracker=agentList[trackedAgent].lastMove

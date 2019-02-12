@@ -1,6 +1,6 @@
 const userControl=false, trackedAgent=0
 const numberOfAgents=8,gridDimensions=8
-const inputType=6,generationLength=50
+const inputType=7,generationLength=50
 
 let wall="-".repeat(gridDimensions*2+2)
 
@@ -44,7 +44,7 @@ class Agent {
 			()=>this.move("down"),
 			()=>this.move("left"),
 			()=>this.move("right"),
-			()=>this.makeConversation(),
+			()=>this.speak(),
 		]
 		this.resetAgent();
 		//fix:
@@ -125,6 +125,10 @@ class Agent {
 		}
     if(type==6){
       return this.bigSurroundings.concat(this.memory)
+    }
+
+    if(type==7){
+      return [...this.bigSurroundings, ...this.memory, ...this.likeArray]
     }
 	}
 
@@ -293,6 +297,36 @@ class Agent {
 		this.lastMove="Agent "+this.id+" akwardly attempted to make conversation."
 	}
 
+	speak(){
+		//console.log('converse')
+    const {
+      opinion,
+      subject
+    } = this.thoughts || {}
+
+    if (opinion == null || subject == null) {
+      return
+    }
+
+		this.bigSurroundings.forEach(personInSpace=>{
+			if (personInSpace!=-1){
+        agentList[personInSpace].hear(opinion, this.id, subject)
+        //agentList[personInSpace].likeArray[this.id]=
+				forceValIntoRange(agentList[personInSpace].likeArray[this.id]+agentList[personInSpace].interestArray[this.id]);
+			//	agentList[personInSpace].trustArray[this.id]=
+			//	forceValIntoRange(agentList[personInSpace].trustArray[this.id]+agentList[personInSpace].interestArray[this.id]/2);
+
+				agentList[personInSpace].interestArray[this.id]*=.9;
+			}
+		})
+    this.lastDir = [0,0]
+    if (opinion > 0) {
+      this.lastMove=`Agent ${this.id} awkwardly said that Agent ${subject} is awesome: ${opinion}`
+    } else {
+      this.lastMove=`Agent ${this.id} awkwardly said that Agent ${subject} sucks shit: ${opinion}`
+    }
+	}
+
 	move(direction){
 		let currentX=this.x;
 		let currentY=this.y;
@@ -335,10 +369,56 @@ class Agent {
 		//console.log('agent',this.id,'loneliness',this.loneliness)
 	}
 
+  hear(opinion, speaker, subject) {
+    if (speaker === this.id) {
+      return;
+    }
+
+    if (subject === this.id) {
+      const likeness = this.likeArray[speaker]
+
+      const diff = (Math.abs(opinion) - Math.abs(likeness)) / 10 * opinion
+
+      if (isNaN(diff)) {
+        debugger;
+      }
+
+      // if n > 0 then c + (n - c)/10
+      // else c - (n + c)/10
+
+      this.likeArray[speaker] += diff
+    } else {
+      // adjust likeness for subject
+      const likeness = this.likeArray[subject]
+
+      // TODO: re-evaluate this convergence
+      const diff = (Math.abs(opinion) - Math.abs(likeness)) / 10 * opinion
+
+      // if n > 0 then c + (n - c)/10
+      // else c - (n + c)/10
+
+      this.likeArray[subject] += diff
+
+      // adjust likeness for speaker
+
+      const speakerLikeness = this.likeArray[speaker]
+
+      const agree = [-1, 1][+(opinion > 0 && this.likeArray[subject] > 0)]
+
+      const speakerDiff = (Math.abs(opinion) - Math.abs(speakerLikeness)) / 10 * agree
+
+      if (isNaN(speakerDiff)) {
+        debugger;
+      }
+
+      this.likeArray[speaker] += speakerDiff
+    }
+  }
+
 	update(type, thinkAndThenAct){
 		thinkAndThenAct();
 		this.getSurroundings();
-	  if (type==6)this.getBigSurroundings();
+	  if (type==6 || type==7)this.getBigSurroundings();
 		this.getLoneliness()
 		this.computePopularity();
 	}
@@ -386,7 +466,13 @@ function stepSim(){
 				//if(Math.random()<.5){
 					let input = agent.generateInput(inputType);
 					let output = networks.population[agentIndex].activate(input);
-					let move = outputToMove(output);
+					let move = outputToMove(output.slice(0, 5));
+          let opinion = output[5] * 2 - 1
+          let subjectValue = Math.max(...output.slice(6, 6 + numberOfAgents))
+          let subject = output.indexOf(subjectValue)
+
+          agent.thoughts = {opinion, subject}
+
 					if (move==-1) move = 4; //if no output due to all 0 input, make conversation
 					let dodo = agent.output[move];
 					//let rand= Math.random()
@@ -461,7 +547,7 @@ function start(action){
 		generation=localStorage.getItem('generation');
 	}
 		console.log('networks:', networks)
-	drawGraph(networks.population[0].graph(500, 500), '.draw');
+  //drawGraph(networks.population[0].graph(500, 500), '.draw');
 }
 
 function save(){
