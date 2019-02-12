@@ -312,7 +312,7 @@ class Agent {
 			if (personInSpace!=-1){
         agentList[personInSpace].hear(opinion, this.id, subject)
         //agentList[personInSpace].likeArray[this.id]=
-				forceValIntoRange(agentList[personInSpace].likeArray[this.id]+agentList[personInSpace].interestArray[this.id]);
+        //forceValIntoRange(agentList[personInSpace].likeArray[this.id]+agentList[personInSpace].interestArray[this.id]);
 			//	agentList[personInSpace].trustArray[this.id]=
 			//	forceValIntoRange(agentList[personInSpace].trustArray[this.id]+agentList[personInSpace].interestArray[this.id]/2);
 
@@ -379,10 +379,6 @@ class Agent {
 
       const diff = (Math.abs(opinion) - Math.abs(likeness)) / 10 * opinion
 
-      if (isNaN(diff)) {
-        debugger;
-      }
-
       // if n > 0 then c + (n - c)/10
       // else c - (n + c)/10
 
@@ -406,10 +402,6 @@ class Agent {
       const agree = [-1, 1][+(opinion > 0 && this.likeArray[subject] > 0)]
 
       const speakerDiff = (Math.abs(opinion) - Math.abs(speakerLikeness)) / 10 * agree
-
-      if (isNaN(speakerDiff)) {
-        debugger;
-      }
 
       this.likeArray[speaker] += speakerDiff
     }
@@ -467,9 +459,11 @@ function stepSim(){
 					let input = agent.generateInput(inputType);
 					let output = networks.population[agentIndex].activate(input);
 					let move = outputToMove(output.slice(0, 5));
+
           let opinion = output[5] * 2 - 1
-          let subjectValue = Math.max(...output.slice(6, 6 + numberOfAgents))
-          let subject = output.indexOf(subjectValue)
+          const subjectChoices = output.slice(6, 6 + numberOfAgents)
+          let subjectValue = Math.max(...subjectChoices)
+          let subject = subjectChoices.indexOf(subjectValue)
 
           agent.thoughts = {opinion, subject}
 
