@@ -188,113 +188,9 @@ class Agent {
         if (tile == -1) facing = [0, 0]
         else facing = agentList[tile].lastDir
 
-        return [tile == -1 ? 0 : 1, ...facing]
+        return [tile, ...facing]
       })
     )
-	}
-
-	insultOther(personBeingInsulted){
-		console.log('insult')
-		this.surroundings.forEach(personInSpace=>{
-			if (personInSpace!=-1){
-				// -if a insults b,
-				// 	if b is present, b like and trust of a both decrease by .5,
-				if (personInSpace==personBeingInsulted){
-					agentList[personBeingInsulted].likeArray[this.id]=
-						forceValIntoRange(agentList[personBeingInsulted].likeArray[this.id]-.5)
-					//agentList[personBeingInsulted].trustArray[this.id]=
-					//	forceValIntoRange(agentList[personBeingInsulted].trustArray[this.id]-.5)
-				}
-				else{
-					let trustOfInsulter=agentList[personInSpace].trustArray[this.id];
-					// 	for all other p in s
-					// 	p like of b decreases by .2*p trust of a
-					agentList[personInSpace].likeArray[personBeingInsulted]=
-						forceValIntoRange(agentList[personInSpace].likeArray[personBeingInsulted]
-						-agentList[personInSpace].likeArray[personBeingInsulted]*trustOfInsulter*.2)
-					// p trust of a= (p trust of a - p trust of b)
-					//agentList[personInSpace].trustArray[this.id]=
-					//	forceValIntoRange(agentList[personInSpace].trustArray[this.id]-
-					//	agentList[personInSpace].trustArray[personBeingInsulted])
-				}
-
-			}
-		});
-		this.lastMove="Agent "+this.id+" insulted Agent "+personBeingInsulted
-	}
-
-	complementOther(personBeingComplemented){
-		console.log('complement')
-
-		//agent only knows its own like value of everyone in the surrounding squares
-		//for incrementing: c+=(1-c)/10 approaches 1
-		//for decrementing: c-=(1+c)/10 approaches -1
-
-		//complement:
-		//it complements someone in a certain square if output node representing
-		//that square is max of all positional output nodes and complement ouput node is max
-
-		//effect of complement:
-
-		//person being complemented likes you alot more,
-
-		//people in surrounding squares like person being complemented a bit more
-
-		//if people in surrounding square like you more if their like of person being complemented>0
-		//else people in surrounding square like you less
-
-
-
-		//insult:
-		//it insults someone in a certain square if output node representing
-		//that square is max of all positional output nodes and complement ouput node is max
-		//effect of complement: person being complemented likes you alot more,
-		//people in surrounding squares like person being complemented a bit more
-		//if people in surrounding square like you more if their like of person being complemented>0
-		//else people in surrounding square like you less
-
-
-		this.surroundings.forEach(personInSpace=>{
-			if (personInSpace!=-1){
-					// -if a complements b,
-					// 	if b is in s, b like of a increases by .2, b trust of a increase by .1
-				if (personInSpace==personBeingComplemented){
-					agentList[personBeingComplemented].likeArray[this.id]=
-						forceValIntoRange(agentList[personBeingComplemented].likeArray[this.id]+.2)
-					//agentList[personBeingComplemented].trustArray[this.id]=
-					//	forceValIntoRange(agentList[personBeingComplemented].trustArray[this.id]+.1)
-				}
-				else{
-					let trustOfComplementer=agentList[personInSpace].trustArray[this.id];
-					// 	for all other p in s
-					// 	p like of b increase by .1*p trust of a
-					agentList[personInSpace].likeArray[personBeingComplemented]=
-						forceValIntoRange(agentList[personInSpace].likeArray[personBeingComplemented]+
-						agentList[personInSpace].likeArray[personBeingComplemented]*trustOfComplementer*.1)
-					//change in trust of a is  proportional to trust of b
-					//agentList[personInSpace].trustArray[this.id]=
-					//	forceValIntoRange(agentList[personInSpace].trustArray[this.id]+
-					//	agentList[personInSpace].trustArray[personBeingComplemented]*.2)
-				}
-			}
-		});
-		this.lastMove="Agent "+this.id+" complemented Agent "+personBeingComplemented
-	}
-
-	makeConversation(){
-		//console.log('converse')
-		this.surroundings.forEach(personInSpace=>{
-			if (personInSpace!=-1){
-				agentList[personInSpace].likeArray[this.id]=
-				forceValIntoRange(agentList[personInSpace].likeArray[this.id]+agentList[personInSpace].interestArray[this.id]);
-			//	agentList[personInSpace].trustArray[this.id]=
-			//	forceValIntoRange(agentList[personInSpace].trustArray[this.id]+agentList[personInSpace].interestArray[this.id]/2);
-
-				agentList[personInSpace].interestArray[this.id]*=.9;
-			}
-		})
-    this.lastDir = [0,0]
-		this.lastMove="Agent "+this.id+" akwardly attempted to make conversation."
 	}
 
 	speak(){
@@ -311,12 +207,6 @@ class Agent {
 		this.bigSurroundings.forEach(personInSpace=>{
 			if (personInSpace!=-1){
         agentList[personInSpace].hear(opinion, this.id, subject)
-        //agentList[personInSpace].likeArray[this.id]=
-        //forceValIntoRange(agentList[personInSpace].likeArray[this.id]+agentList[personInSpace].interestArray[this.id]);
-			//	agentList[personInSpace].trustArray[this.id]=
-			//	forceValIntoRange(agentList[personInSpace].trustArray[this.id]+agentList[personInSpace].interestArray[this.id]/2);
-
-				agentList[personInSpace].interestArray[this.id]*=.9;
 			}
 		})
     this.lastDir = [0,0]
@@ -359,10 +249,12 @@ class Agent {
 		let changeInloneliness=1
 		this.surroundings.forEach(space=>{
 			//console.log(this.id,space)
-			if (space!=-1) changeInloneliness-=1;
+      if (space!=-1) {
+        changeInloneliness -= 0.5 + this.likeArray[space];
+      }
 
-      if (this.lastDir[0] === 0 && this.lastDir[1] === 0)
-			  if (space!=-1) changeInloneliness-=1;
+      //if (this.lastDir[0] === 0 && this.lastDir[1] === 0)
+      //if (space!=-1) changeInloneliness-=1;
 		})
 		this.loneliness+=changeInloneliness
 		this.updateMemory(-changeInloneliness);
@@ -377,33 +269,52 @@ class Agent {
     if (subject === this.id) {
       const likeness = this.likeArray[speaker]
 
-      const diff = (Math.abs(opinion) - Math.abs(likeness)) / 10 * opinion
+      const diff = Math.abs(likeness) / 10 * opinion
 
-      // if n > 0 then c + (n - c)/10
-      // else c - (n + c)/10
+      if (Math.abs(this.likeArray[speaker]) > 1) {
+        debugger
+      }
 
       this.likeArray[speaker] += diff
+      this.likeArray[speaker] = Math.max(Math.min(this.likeArray[speaker], 1), -1)
     } else {
       // adjust likeness for subject
       const likeness = this.likeArray[subject]
 
       // TODO: re-evaluate this convergence
-      const diff = (Math.abs(opinion) - Math.abs(likeness)) / 10 * opinion
-
-      // if n > 0 then c + (n - c)/10
-      // else c - (n + c)/10
+      const diff = (1 - Math.abs(likeness)) / 10 * opinion
 
       this.likeArray[subject] += diff
+      this.likeArray[subject] = Math.max(Math.min(this.likeArray[subject], 1), -1)
+
+      if (Math.abs(this.likeArray[subject]) > 1) {
+        debugger
+      }
 
       // adjust likeness for speaker
 
       const speakerLikeness = this.likeArray[speaker]
 
-      const agree = [-1, 1][+(opinion > 0 && this.likeArray[subject] > 0)]
+      const agree = [-1, 1][+(
+        (
+          opinion > 0 && this.likeArray[subject] > 0
+        ) || (
+          opinion < 0 && this.likeArray[subject] < 0
+        )
+      )]
 
-      const speakerDiff = (Math.abs(opinion) - Math.abs(speakerLikeness)) / 10 * agree
+      const speakerDiff = (1 - Math.abs(speakerLikeness)) / 10 * agree
 
       this.likeArray[speaker] += speakerDiff
+      this.likeArray[speaker] = Math.max(Math.min(this.likeArray[speaker], 1), -1)
+
+      if (Math.abs(this.likeArray[speaker]) > 1) {
+        debugger
+      }
+    }
+
+    if (Math.abs(this.likeArray[subject]) > 1) {
+      debugger
     }
   }
 
@@ -497,7 +408,7 @@ function stepSim(){
 		if (!skipToGeneration) {
 			let svg=document.querySelector('.draw')
 			svg.parentNode.replaceChild(svg.cloneNode(false), svg);
-			drawGraph(networks.population[0].graph(400,400), '.draw');
+      //drawGraph(networks.population[0].graph(400,400), '.draw');
 		}
 	}
 }

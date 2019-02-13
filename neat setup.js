@@ -15,12 +15,12 @@ function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
   if(!USE_TRAINED_POP) {
     var input = new neataptic.Layer.Dense(INPUT);
     var hidden1 = new neataptic.Layer.Dense(INPUT-2);
-    var hidden2 = new neataptic.Layer.Dense(INPUT-4);
+    var hidden2 = new neataptic.Layer.Dense(INPUT-2);
     var output = new neataptic.Layer.Dense(OUTPUT);
     // 4 layer
-    // input.connect(hidden1);
-    // hidden1.connect(hidden2);
-    // hidden2.connect(output);
+    //input.connect(hidden1);
+    //hidden1.connect(hidden2);
+    //hidden2.connect(output);
     //3 layer
     input.connect(hidden1);
     hidden1.connect(output);
@@ -32,7 +32,7 @@ function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
       {
         mutation: Methods.mutation.ALL,
         popsize: numberOfAgents,
-        elitism: numberOfAgents - 2,
+        elitism: numberOfAgents - 4,
         fitnessPopulation:false,
         //mutationRate: 1,
         network: Architect.Construct([input, hidden1, output])
@@ -47,7 +47,7 @@ function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
         mutation: Methods.mutation.ALL,
         mutationRate: 1,
         popsize: numberOfAgents,
-        elitism: numberOfAgents - 2,
+        elitism: numberOfAgents - 4,
         fitnessPopulation:false,
       }
     )
@@ -121,8 +121,8 @@ function customFitnessFunction(){
     babies.push(networks.getOffspring());
   }
 
-  networks.population = babies;
   networks.mutate();
+  //networks.population = babies;
   networks.population = [...elitists, ...babies];
   networks.generation++;
 }
