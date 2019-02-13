@@ -130,6 +130,18 @@ class Agent {
     if(type==7){
       return [...this.bigSurroundings, ...this.memory, ...this.likeArray]
     }
+
+    if(type==8){
+      const others = this.likeArray.map((opinion, agentNum) => {
+        return [
+          opinion,
+          agentList[agentNum].x - this.x,
+          agentList[agentNum].y - this.y
+        ]
+      })
+
+      return Array.prototype.concat.apply([], others)
+    }
 	}
 
 	computePopularity(){

@@ -89,11 +89,12 @@ function buildNeuralNets(type,loadSaved){
   if (type==5) INPUT=8+5
   if (type==6) INPUT=(24*3)+5
   if (type==7) INPUT=(24*3)+5+numberOfAgents /* include space for likeArray */
+  if (type==8) INPUT=(numberOfAgents*3) /* include space for all the things */
 
   //can move in 4 directions, make conversation
   OUTPUT=5
   // insult or complement any agent
-  if (type==7) OUTPUT=5+1+numberOfAgents
+  if (type==7||type==8) OUTPUT=5+1+numberOfAgents
   //const OUTPUT=6+2*numberOfAgents
 
   let n= initNeat(INPUT,OUTPUT,loadSaved)
