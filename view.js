@@ -26,13 +26,13 @@ function renderView(iteration){
 	let agentInfo="";
 	agentList.forEach(agent=>{
 		//agent.update();
-    agentInfo+="Agent "+agent.id+" likes: "+agent.likeArray
+    agentInfo+="Agent "+agent.id+" likes: "+agent.likeArray.map((n)=>n.toPrecision(2))
 		//+"\ntrust: "+agent.trustArray
-      +" last move: "+ agent.lastMove+"\n"+
 
-      /*+"\npopularity: "+agent.popularity*/
-		"loneliness: "+agent.loneliness+"\n"
-		+"memory: "+agent.memory+"\n"
+      +"\npopularity: "+agent.popularity
+		+"\nloneliness: "+agent.loneliness.toPrecision(3)
+		+"\tmemory: "+agent.memory.map((n)=>n.toPrecision(2))+"\n"
+      +"last move: "+ agent.lastMove+"\n"
 	});
 	//console.clear();
 
