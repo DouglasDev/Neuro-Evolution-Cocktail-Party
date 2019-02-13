@@ -408,7 +408,7 @@ function stepSim(){
 		if (!skipToGeneration) {
 			let svg=document.querySelector('.draw')
 			svg.parentNode.replaceChild(svg.cloneNode(false), svg);
-      //drawGraph(networks.population[0].graph(400,400), '.draw');
+      drawGraph(networks.population[0].graph(400,400), '.draw');
 		}
 	}
 }
@@ -452,7 +452,7 @@ function start(action){
 		generation=localStorage.getItem('generation');
 	}
 		console.log('networks:', networks)
-  //drawGraph(networks.population[0].graph(500, 500), '.draw');
+  drawGraph(networks.population[0].graph(500, 500), '.draw');
 }
 
 function save(){
