@@ -223,9 +223,9 @@ class Agent {
 		})
     this.lastDir = [0,0]
     if (opinion > 0) {
-      this.lastMove=`Agent ${this.id} awkwardly said that Agent ${subject} is awesome: ${opinion}`
+      this.lastMove=`Agent ${this.id} said that Agent ${subject} is awesome: ${opinion}`
     } else {
-      this.lastMove=`Agent ${this.id} awkwardly said that Agent ${subject} sucks shit: ${opinion}`
+      this.lastMove=`Agent ${this.id} said that Agent ${subject} is a terrible person: ${opinion}`
     }
 	}
 
