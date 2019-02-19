@@ -48,7 +48,7 @@ function initNeat(INPUT,OUTPUT,USE_TRAINED_POP){
       {
         mutation: Methods.mutation.ALL,
         popsize: numberOfAgents,
-        elitism: numberOfAgents-4,
+        elitism: numberOfAgents-2,
         fitnessPopulation:false,
       }
     )
@@ -109,8 +109,8 @@ function buildNeuralNets(type,loadSaved){
   if (type==4) INPUT=8
   if (type==5) INPUT=8+5
 
-  //can move in 4 directions, make conversation, 
-  const OUTPUT=5
+  //can complement or insult in 8 directions, move (only four directions but same output as 8), make conversation, 
+  const OUTPUT=12
   // insult or complement any agent
   //const OUTPUT=6+2*numberOfAgents
 
@@ -150,4 +150,30 @@ function outputToMove(output){
   let max = Math.max(...output)
   let move = output.indexOf(max)
   return move;
+}
+
+
+function outputToSelectMove(output){
+  let max = Math.max(output[0],output[1],output[2],output[3])
+  let moveIndex = output.indexOf(max)
+  return moveIndex;
+}
+
+
+let directionArr4Way = ['','','','','up','','left','','down','','right','']
+let directionArr8Way = 
+  ['','','','',['up',''],['up','left'],['','left'],['down','left'],
+              ['','down'],['down','right'],['','right'],['up','right']]
+
+function outputToSelectdirection8way(output){
+  let max = Math.max(output[4],output[5],output[6],output[7],output[8],output[9],output[10],output[11])
+  let direction = output.indexOf(max)
+  console.log(direction)
+  return directionArr8Way[direction];
+}
+
+function outputToSelectdirection4way(output){
+  let max = Math.max(output[4],output[6],output[8],output[10])
+  let direction = output.indexOf(max)
+  return directionArr4Way[direction];
 }
